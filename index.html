@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estudo de Impacto de Vizinhança</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>Gerador de Estudo de Impacto de Vizinhança (EIV)</h1>
+      <p>
+        Utilize este aplicativo para organizar informações, avaliar impactos e
+        gerar um relatório estruturado do Estudo de Impacto de Vizinhança.
+      </p>
+    </header>
+
+    <main>
+      <section class="card" aria-labelledby="project-info-title">
+        <h2 id="project-info-title">Dados do Empreendimento</h2>
+        <form id="project-form" class="form-grid">
+          <label>
+            Nome do empreendimento
+            <input type="text" id="projectName" required />
+          </label>
+
+          <label>
+            Responsável técnico
+            <input type="text" id="responsible" />
+          </label>
+
+          <label>
+            Localização (endereço completo)
+            <textarea id="location" rows="2"></textarea>
+          </label>
+
+          <label>
+            Descrição do projeto
+            <textarea id="description" rows="3"></textarea>
+          </label>
+
+          <label>
+            Zoneamento / Legislação aplicável
+            <textarea id="zoning" rows="2"></textarea>
+          </label>
+
+          <label>
+            Estágio do projeto
+            <select id="stage">
+              <option value="">Selecione…</option>
+              <option>Estudo preliminar</option>
+              <option>Projeto básico</option>
+              <option>Projeto executivo</option>
+              <option>Operação</option>
+            </select>
+          </label>
+        </form>
+      </section>
+
+      <section class="card" aria-labelledby="context-title">
+        <h2 id="context-title">Caracterização da Área de Influência</h2>
+        <div class="form-grid">
+          <label>
+            Características urbanísticas
+            <textarea id="urbanContext" rows="3"></textarea>
+          </label>
+          <label>
+            Perfil socioeconômico
+            <textarea id="socioeconomic" rows="3"></textarea>
+          </label>
+          <label>
+            Infraestrutura existente
+            <textarea id="infrastructure" rows="3"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="impacts-title">
+        <h2 id="impacts-title">Avaliação de Impactos</h2>
+        <div class="impacts-wrapper">
+          <article class="impact-block">
+            <h3>Impactos Positivos</h3>
+            <textarea id="positiveImpacts" rows="5" placeholder="Descreva benefícios esperados para a vizinhança"></textarea>
+          </article>
+          <article class="impact-block">
+            <h3>Impactos Negativos</h3>
+            <textarea id="negativeImpacts" rows="5" placeholder="Liste impactos adversos, intensidade e probabilidade"></textarea>
+          </article>
+          <article class="impact-block">
+            <h3>Medidas Mitigadoras / Compensatórias</h3>
+            <textarea id="mitigation" rows="5" placeholder="Defina ações, responsáveis, prazos e indicadores"></textarea>
+          </article>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="public-services-title">
+        <h2 id="public-services-title">Serviços Públicos e Infraestrutura</h2>
+        <div class="form-grid">
+          <label>
+            Mobilidade e trânsito
+            <textarea id="mobility" rows="3"></textarea>
+          </label>
+          <label>
+            Equipamentos urbanos (saúde, educação, lazer)
+            <textarea id="publicEquipment" rows="3"></textarea>
+          </label>
+          <label>
+            Saneamento, drenagem e energia
+            <textarea id="sanitation" rows="3"></textarea>
+          </label>
+          <label>
+            Segurança pública e defesa civil
+            <textarea id="security" rows="3"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="participation-title">
+        <h2 id="participation-title">Participação Social e Comunicação</h2>
+        <div class="form-grid">
+          <label>
+            Estratégia de comunicação
+            <textarea id="communication" rows="3"></textarea>
+          </label>
+          <label>
+            Registro das audiências e consultas públicas
+            <textarea id="publicParticipation" rows="3"></textarea>
+          </label>
+          <label>
+            Demandas e encaminhamentos
+            <textarea id="demands" rows="3"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="monitoring-title">
+        <h2 id="monitoring-title">Plano de Monitoramento</h2>
+        <div class="form-grid">
+          <label>
+            Indicadores de acompanhamento
+            <textarea id="indicators" rows="3"></textarea>
+          </label>
+          <label>
+            Responsáveis pelo monitoramento
+            <textarea id="monitoringTeam" rows="3"></textarea>
+          </label>
+          <label>
+            Cronograma de avaliação
+            <textarea id="timeline" rows="3"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="card actions" aria-labelledby="actions-title">
+        <h2 class="sr-only" id="actions-title">Ações</h2>
+        <div class="buttons">
+          <button id="generateReport" type="button" class="primary">
+            Gerar relatório
+          </button>
+          <button id="downloadReport" type="button" class="secondary" disabled>
+            Baixar em PDF
+          </button>
+          <button id="clearForm" type="button" class="secondary">
+            Limpar campos
+          </button>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="report-title">
+        <h2 id="report-title">Pré-visualização do Relatório</h2>
+        <div id="reportPreview" class="report-preview" aria-live="polite">
+          Preencha os campos e clique em &quot;Gerar relatório&quot; para visualizar o
+          Estudo de Impacto de Vizinhança.
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <p>
+        Referências: Estatuto da Cidade (Lei nº 10.257/2001) e legislações
+        municipais correlatas.
+      </p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
