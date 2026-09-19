@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BIM Radar PR</title>
+<meta name="description" content="Radar automatizado de licitações, editais, prêmios, notícias, eventos e oportunidades relacionadas a BIM.">
+<style>
+:root{--bg:#07110f;--card:#0d1a17;--line:#203a32;--txt:#f3f7f5;--mut:#90a69e;--g:#55d990;--blue:#57a8ff;--warn:#ffc85c}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 82% 0,#12372a 0,transparent 30%),var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}a{color:inherit;text-decoration:none}button,input,select{font:inherit}
+header{position:sticky;top:0;z-index:10;backdrop-filter:blur(16px);background:#07110fdd;border-bottom:1px solid #ffffff12}.bar{height:76px;display:flex;align-items:center;gap:16px;max-width:1180px;margin:auto;padding:0 24px}.logo{width:48px;height:48px;border-radius:50%;border:2px solid var(--g);display:grid;place-items:center;font-size:10px;font-weight:900;box-shadow:0 0 30px #55d99020}.brand{display:grid}.brand b{letter-spacing:.15em}.brand span{color:var(--mut);font-size:11px}.status{margin-left:auto;border:1px solid var(--line);border-radius:999px;padding:8px 12px;color:#b8cbc4;font-size:12px;white-space:nowrap}.status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn);margin-right:7px}.status.ok i{background:var(--g);box-shadow:0 0 12px #55d990}
+main{max-width:1180px;margin:auto;padding:54px 24px 90px}.hero{display:grid;grid-template-columns:1.35fr .65fr;gap:42px;align-items:center;min-height:330px}.ey{color:#9bc6b5;letter-spacing:.17em;text-transform:uppercase;font-size:11px}.hero h1{font-size:clamp(42px,6vw,76px);line-height:.97;letter-spacing:-.055em;margin:18px 0}.hero p{color:#a5b7b0;line-height:1.65;font-size:17px;max-width:760px}.radar{aspect-ratio:1;border:1px solid #285142;border-radius:50%;position:relative;background:radial-gradient(circle,#14372c 0 5%,#0b1d18 6% 20%,#091512 21%);box-shadow:inset 0 0 80px #55d9900e}.radar:before,.radar:after{content:"";position:absolute;border:1px solid #55d99032;border-radius:50%;inset:18%}.radar:after{inset:34%}.sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 78%,#55d99022 94%,transparent 100%);animation:spin 5s linear infinite}.rtext{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.rtext small{color:var(--g);letter-spacing:.25em}.rtext strong{font-size:30px}@keyframes spin{to{transform:rotate(360deg)}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:17px;overflow:hidden;margin:34px 0}.stat{padding:20px;border-right:1px solid var(--line)}.stat:last-child{border-right:0}.stat span{display:block;color:var(--mut);font-size:10px;letter-spacing:.12em;text-transform:uppercase}.stat b{font-size:27px}
+.controls{display:grid;grid-template-columns:1fr auto;gap:12px;margin:30px 0 18px}.search{display:flex;align-items:center;border:1px solid var(--line);background:#0b1714;border-radius:14px;padding:0 14px}.search input{width:100%;border:0;outline:0;background:transparent;color:var(--txt);padding:14px 0}.search input::placeholder{color:#61756d}.sort{border:1px solid var(--line);background:#0b1714;color:#d6e2dd;border-radius:14px;padding:0 12px}
+.filters{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 30px}.chip{cursor:pointer;border:1px solid var(--line);background:transparent;padding:8px 12px;border-radius:999px;color:#9fb2aa;font-size:12px}.chip.on{background:#dff9e9;color:#10231c;border-color:#dff9e9;font-weight:800}.chip.pr.on{background:#cfe5ff;border-color:#cfe5ff}
+.head{display:flex;justify-content:space-between;align-items:end;margin:34px 0 12px}.head small{color:var(--g);letter-spacing:.18em}.head h2{margin:5px 0 0}.head p{color:#72877f;font-size:12px;text-align:right}
+.feed{display:grid;gap:12px}.item{display:block;border:1px solid var(--line);background:linear-gradient(180deg,#11231f,#0b1815);border-radius:17px;padding:21px;transition:.2s transform,.2s border-color}.item:hover{transform:translateY(-2px);border-color:#3e6a5b}.top{display:flex;justify-content:space-between;gap:16px;align-items:center}.tag{font-size:10px;text-transform:uppercase;letter-spacing:.11em;font-weight:800;padding:6px 9px;border-radius:6px;background:#123526;color:#85e8ae}.tag.edital{background:#102940;color:#83c2ff}.tag.premio{background:#281d38;color:#c8a8ff}.tag.evento{background:#342b14;color:#f3d67a}.tag.licitacao{background:#16333c;color:#8de0ed}.tag.oportunidade{background:#2d2215;color:#ffc982}.score{color:#9bc7b5;font-size:12px}.item h3{font-size:20px;margin:14px 0 8px;line-height:1.3}.item p{color:#95a8a0;line-height:1.55;font-size:14px;margin:0}.meta{display:flex;gap:13px;flex-wrap:wrap;margin-top:15px;color:#71867e;font-size:11px}.value{color:#a9e5c1}.empty{border:1px dashed var(--line);border-radius:17px;padding:42px;text-align:center;color:#80948d}.notice{margin-top:28px;border-left:3px solid var(--g);background:#0e1a16;padding:17px 20px;border-radius:0 12px 12px 0;color:#95a8a0;line-height:1.55;font-size:13px}.notice b{color:#fff}
+footer{max-width:1180px;margin:auto;padding:28px 24px;border-top:1px solid #ffffff12;color:#61756d;font-size:11px}
+@media(max-width:800px){.hero{grid-template-columns:1fr}.radar{width:min(290px,75vw)}.stats{grid-template-columns:1fr 1fr}.stat:nth-child(2){border-right:0}.stat{border-bottom:1px solid var(--line)}.controls{grid-template-columns:1fr}.sort{height:48px}}
+@media(max-width:520px){main{padding:36px 16px 70px}.bar{padding:0 16px}.status{display:none}.stats{grid-template-columns:1fr}.stat{border-right:0}.hero h1{font-size:44px}.head{align-items:start;gap:12px}.head p{max-width:130px}}
+</style>
+</head>
+<body>
+<header><div class="bar"><div class="logo">BIM PR</div><div class="brand"><b>BIM RADAR</b><span>Coletivo de Núcleos · Paraná</span></div><div id="status" class="status"><i></i><span>conectando ao radar</span></div></div></header>
+<main>
+<section class="hero">
+<div><div class="ey">Inteligência BIM · Monitoramento contínuo</div><h1>O radar do ecossistema BIM.</h1><p>Licitações, editais, prêmios, notícias, eventos, capacitações e oportunidades ligadas a BIM, openBIM, IFC, ISO 19650, CDE e gêmeos digitais — reunidas e classificadas automaticamente.</p></div>
+<div class="radar"><div class="sweep"></div><div class="rtext"><small>BIM</small><strong>RADAR</strong><small>PR</small></div></div>
+</section>
+<section class="stats">
+<div class="stat"><span>Itens carregados</span><b id="statTotal">—</b></div>
+<div class="stat"><span>No Paraná</span><b id="statPR">—</b></div>
+<div class="stat"><span>Fontes ativas</span><b id="statSources">—</b></div>
+<div class="stat"><span>Orquestrador</span><b>1 min</b></div>
+</section>
+<div class="controls">
+<label class="search"><input id="search" type="search" placeholder="Buscar BIM, IFC, ISO 19650, licitação, prêmio..."></label>
+<select id="sort" class="sort" aria-label="Ordenação"><option value="relevance">Mais relevantes</option><option value="recent">Mais recentes</option></select>
+</div>
+<div id="filters" class="filters">
+<button class="chip on" data-cat="todos">Todos</button>
+<button class="chip" data-cat="licitacao">Licitações</button>
+<button class="chip" data-cat="edital">Editais</button>
+<button class="chip" data-cat="premio">Prêmios</button>
+<button class="chip" data-cat="noticia">Notícias</button>
+<button class="chip" data-cat="evento">Eventos</button>
+<button class="chip" data-cat="oportunidade">Oportunidades</button>
+<button id="prOnly" class="chip pr">Somente Paraná</button>
+</div>
+<div class="head"><div><small>RADAR BIM</small><h2 id="resultTitle">Resultados</h2></div><p id="lastUpdate">Carregando dados...</p></div>
+<section id="feed" class="feed"><div class="empty">Consultando o radar...</div></section>
+<div class="notice"><b>Atualização automática:</b> o orquestrador do backend é executado a cada minuto. Cada fonte possui sua própria cadência para respeitar limites de acesso e evitar bloqueios. Sempre confirme prazos, valores e condições na fonte oficial antes de qualquer decisão.</div>
+</main>
+<footer>BIM Radar PR · Coletivo de Núcleos BIM do Paraná · Beta público</footer>
+<script>
+const SB="https://llhuncbadsawvcrdfdol.supabase.co";
+const KEY="sb_publishable_HtWKkD7A-w-lWLyP88HWRg_DVxwY1DJ";
+let items=[],sources=[],activeCat="todos",onlyPR=false;
+
+const $=id=>document.getElementById(id);
+const fmtDate=v=>{if(!v)return"";const d=new Date(v);return isNaN(d)?"":new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"short",year:"numeric"}).format(d)};
+const fmtMoney=(n,c)=>{if(n===null||n===undefined)return"";try{return new Intl.NumberFormat("pt-BR",{style:"currency",currency:c||"BRL"}).format(Number(n))}catch{return String(n)}};
+const label={licitacao:"Licitação",edital:"Edital",premio:"Prêmio",noticia:"Notícia",evento:"Evento",oportunidade:"Oportunidade"};
+function text(el,value){el.textContent=value??"";return el}
+function el(tag,cls){const n=document.createElement(tag);if(cls)n.className=cls;return n}
+
+async function api(path){
+  const r=await fetch(SB+"/rest/v1/"+path,{headers:{apikey:KEY}});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return r.json();
+}
+async function load(){
+  try{
+    const data=await Promise.all([
+      api("opportunities?select=id,title,summary,category,source_name,url,location,state,country,published_at,deadline_at,estimated_value,currency,relevance,keywords,first_seen_at&order=relevance.desc&limit=250"),
+      api("sources?select=source_key,name,enabled,last_scanned_at,last_status,last_error,cadence_minutes&order=name.asc")
+    ]);
+    items=data[0]||[];sources=data[1]||[];
+    const active=sources.filter(x=>x.enabled);
+    $("statTotal").textContent=String(items.length);
+    $("statPR").textContent=String(items.filter(x=>x.state==="PR").length);
+    $("statSources").textContent=String(active.length);
+    const good=active.filter(x=>x.last_status==="success").length;
+    const st=$("status");st.classList.toggle("ok",good>0);
+    st.querySelector("span").textContent=good>0?good+" fontes operacionais":"radar em inicialização";
+    const dates=active.map(x=>x.last_scanned_at).filter(Boolean).map(x=>new Date(x)).filter(x=>!isNaN(x));
+    const max=dates.length?new Date(Math.max.apply(null,dates.map(x=>x.getTime()))):null;
+    $("lastUpdate").textContent=max?"Última varredura: "+max.toLocaleString("pt-BR"):"Aguardando primeira varredura";
+    render();
+  }catch(e){
+    $("status").querySelector("span").textContent="falha de conexão";
+    $("feed").innerHTML='<div class="empty">Não foi possível consultar o radar agora. A página tentará novamente automaticamente.</div>';
+  }
+}
+function filtered(){
+  const q=$("search").value.trim().toLowerCase();
+  let arr=items.filter(x=>(activeCat==="todos"||x.category===activeCat)&&(!onlyPR||x.state==="PR"));
+  if(q)arr=arr.filter(x=>[x.title,x.summary,x.source_name,x.location,(x.keywords||[]).join(" ")].join(" ").toLowerCase().includes(q));
+  if($("sort").value==="recent")arr.sort((a,b)=>new Date(b.published_at||b.first_seen_at||0)-new Date(a.published_at||a.first_seen_at||0));
+  else arr.sort((a,b)=>(b.relevance||0)-(a.relevance||0));
+  return arr;
+}
+function render(){
+  const arr=filtered(),feed=$("feed");feed.replaceChildren();
+  $("resultTitle").textContent=arr.length+" resultado"+(arr.length===1?"":"s");
+  if(!arr.length){feed.appendChild(text(el("div","empty"),"Nenhum item encontrado com estes filtros."));return}
+  arr.forEach(x=>{
+    const a=el("a","item");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";
+    const top=el("div","top");
+    top.appendChild(text(el("span","tag "+(x.category||"noticia")),label[x.category]||"Conteúdo"));
+    top.appendChild(text(el("span","score"),"Relevância "+(x.relevance||0)));
+    a.appendChild(top);
+    a.appendChild(text(el("h3"),x.title));
+    if(x.summary)a.appendChild(text(el("p"),x.summary.length>360?x.summary.slice(0,357)+"...":x.summary));
+    const meta=el("div","meta");
+    if(x.source_name)meta.appendChild(text(el("span"),x.source_name));
+    if(x.location)meta.appendChild(text(el("span"),x.location));
+    const dt=fmtDate(x.published_at||x.first_seen_at);if(dt)meta.appendChild(text(el("span"),dt));
+    if(x.deadline_at)meta.appendChild(text(el("span"),"Data/prazo: "+fmtDate(x.deadline_at)));
+    if(x.estimated_value!==null&&x.estimated_value!==undefined)meta.appendChild(text(el("span","value"),fmtMoney(x.estimated_value,x.currency)));
+    if(x.keywords&&x.keywords.length)meta.appendChild(text(el("span"),x.keywords.slice(0,4).join(" · ")));
+    a.appendChild(meta);feed.appendChild(a);
+  });
+}
+document.querySelectorAll("[data-cat]").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("[data-cat]").forEach(x=>x.classList.remove("on"));b.classList.add("on");activeCat=b.dataset.cat;render();
+}));
+$("prOnly").addEventListener("click",()=>{onlyPR=!onlyPR;$("prOnly").classList.toggle("on",onlyPR);render()});
+$("search").addEventListener("input",render);$("sort").addEventListener("change",render);
+load();setInterval(load,60000);
+</script>
+</body>
+</html>
