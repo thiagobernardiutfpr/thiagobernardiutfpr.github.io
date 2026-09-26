@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#4463a9" />
+  <title>APUC Rotas — Prefeitura de Apucarana</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="styles.css?v=18" />
+</head>
+<body>
+  <div class="app-frame">
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="brand-logo" src="assets/prefeitura-apucarana-vertical.png" alt="Prefeitura de Apucarana — Cuidando das pessoas, Construindo o futuro">
+        <div class="brand-module">APUC ROTAS</div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active"><span class="nav-icon">▦</span>Painel</button>
+        <button class="nav-item" id="navRotas"><span class="nav-icon">⌖</span>Rotas</button>
+        <button class="nav-item" id="navSinistros"><span class="nav-icon">!</span>Sinistros</button>
+        <button class="nav-item" id="navReports"><span class="nav-icon">▤</span>Laudos técnicos</button>
+        <button class="nav-item" id="navSpatial"><span class="nav-icon">◎</span>Espacialização</button>
+        <button class="nav-item" id="navSettings"><span class="nav-icon">⚙</span>Configurações</button>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">VEÍCULOS</div>
+        <div id="vehicleList" class="vehicle-list"></div>
+      </div>
+
+      <div class="sidebar-note">Gestão de rotas, fotografias georreferenciadas e ocorrências de campo no município de Apucarana.</div>
+
+      <div class="sidebar-user">
+        <div class="user-avatar">A</div>
+        <div><strong>Operação APUC</strong><small id="cloudSidebarStatus">Armazenamento local</small></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <section class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">PREFEITURA DE APUCARANA / GESTÃO OPERACIONAL</p>
+          <h1>Rotas que organizam<br>o trabalho em campo.</h1>
+        </div>
+        <div class="hero-status">
+          <div><span class="status-kicker">VEÍCULO SELECIONADO</span><strong id="selectedVehicleTitle">APUC-01</strong><span id="selectedVehicleMeta">Nenhuma rota selecionada</span></div>
+          <button class="btn outline-light" id="btnNewRoute">＋ Nova rota</button>
+        </div>
+      </section>
+
+      <section class="metrics-row">
+        <div class="metric"><span class="metric-icon">⌖</span><strong id="statRoutes">0</strong><span>ROTAS</span></div>
+        <div class="metric"><span class="metric-icon">▧</span><strong id="statPhotos">0</strong><span>FOTOS</span></div>
+        <div class="metric"><span class="metric-icon">!</span><strong id="statIncidents">0</strong><span>SINISTROS</span></div>
+        <div class="metric"><span class="metric-icon">◎</span><strong id="statGps">0</strong><span>LOCALIZADAS</span></div>
+      </section>
+
+      <section class="route-toolbar">
+        <div class="route-context">
+          <span class="section-kicker">ROTA EM VISUALIZAÇÃO</span>
+          <select id="routeViewSelect" aria-label="Selecionar rota"></select>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn" id="btnEditSelectedRoute">Editar rota</button>
+          <button class="btn" id="btnNewIncident">＋ Sinistro</button>
+          <button class="btn" id="btnAnalyzePhotos">⌖ Localizar coordenadas</button>
+          <label class="btn primary file-btn">＋ Enviar fotos<input id="photoUpload" type="file" accept="image/*" multiple hidden></label>
+          <span id="ocrStatus" class="ocr-status" hidden></span>
+        </div>
+      </section>
+
+      <section id="photoProgressPanel" class="photo-progress-panel" aria-live="polite" aria-label="Progresso do processamento de fotografias">
+        <div id="uploadProgressRow" class="process-progress is-idle">
+          <div class="process-progress-head">
+            <span>UPLOAD DAS FOTOS</span>
+            <strong id="uploadProgressText" class="process-progress-percent">0%</strong>
+          </div>
+          <div id="uploadProgress" class="process-progress-track" role="progressbar" aria-label="Progresso do upload das fotos" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="uploadProgressFill" class="process-progress-fill upload-fill" style="width:0%"></div>
+            <span id="uploadProgressInside" class="process-progress-inside">0%</span>
+          </div>
+          <div id="uploadProgressDetail" class="process-progress-detail">Aguardando envio de fotografias.</div>
+        </div>
+        <div id="locationProgressRow" class="process-progress is-idle">
+          <div class="process-progress-head">
+            <span>LOCALIZAÇÃO DAS COORDENADAS</span>
+            <strong id="locationProgressText" class="process-progress-percent">0%</strong>
+          </div>
+          <div id="locationProgress" class="process-progress-track" role="progressbar" aria-label="Progresso da localização das coordenadas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="locationProgressFill" class="process-progress-fill location-fill" style="width:0%"></div>
+            <span id="locationProgressInside" class="process-progress-inside">0%</span>
+          </div>
+          <div id="locationProgressDetail" class="process-progress-detail">Aguardando análise das coordenadas.</div>
+        </div>
+      </section>
+
+      <section class="operational-grid">
+        <div class="map-panel">
+          <div class="panel-head">
+            <div><span class="section-kicker">MAPA OPERACIONAL</span><h2>Registros da rota</h2></div>
+            <div class="map-actions">
+              <div class="map-style-switch" role="group" aria-label="Tipo de mapa">
+                <button id="btnStreet" class="map-style-btn active">Mapa</button>
+                <button id="btnSatellite" class="map-style-btn">Satélite</button>
+              </div>
+              <button class="text-action" id="btnFitMap">ENQUADRAR</button>
+            </div>
+          </div>
+          <div id="map"></div>
+          <div class="map-legend"><span><i class="legend-photo"></i> Fotografia georreferenciada</span><span><i class="legend-incident"></i> Sinistro</span><span><i class="legend-destination"></i> Destino</span><span><i class="legend-unit"></i> Unidade das planilhas</span></div>
+        </div>
+
+        <aside class="photo-panel">
+          <div class="panel-head photo-panel-head">
+            <div><span class="section-kicker">IMAGENS DA ROTA</span><h2>Fotografias</h2></div>
+            <div class="photo-head-actions">
+              <button class="btn danger photo-delete-all" id="btnDeleteAllPhotos" type="button" title="Apagar todas as fotos da rota selecionada">APAGAR TODAS</button>
+              <span id="photoCount" class="photo-count">0</span>
+            </div>
+          </div>
+          <p class="panel-help">Ao clicar em <strong>Localizar coordenadas</strong>, o sistema procura primeiro as <strong>coordenadas geográficas escritas no canto inferior direito</strong>. Se elas não estiverem legíveis, lê no <strong>canto inferior esquerdo</strong> o <strong>nome da rua e o número do imóvel</strong> e consulta o <strong>Google Maps</strong>, restringindo a busca a <strong>Apucarana/PR</strong>. Se ainda não localizar, analisa o <strong>mini mapa</strong> e, por último, tenta o <strong>GPS/EXIF</strong>. As fotos confirmadas são inseridas automaticamente no mapa.</p>
+          <div id="photoGallery" class="photo-gallery"></div>
+        </aside>
+      </section>
+
+      <section class="content-grid">
+        <div class="routes-panel" id="routesSection">
+          <div class="panel-head">
+            <div><span class="section-kicker">CADASTRO OPERACIONAL</span><h2>Rotas do veículo</h2></div>
+            <button class="text-action" id="btnExportCsv">EXPORTAR CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Data</th><th>Destino</th><th>Responsável</th><th>Fotos</th><th>Sinistros</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody id="routesTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="activity-panel" id="incidentsSection">
+          <div class="panel-head"><div><span class="section-kicker">HISTÓRICO</span><h2>Atividade recente</h2></div><button class="text-action" id="btnShowAll">VER TODOS</button></div>
+          <div id="activityList" class="activity-list"></div>
+        </div>
+      </section>
+
+      <section class="reports-panel" id="reportsSection">
+        <div class="reports-copy">
+          <span class="section-kicker">DOCUMENTAÇÃO TÉCNICA</span>
+          <h2>Laudos técnicos por bairro e consolidado</h2>
+          <p>Gere laudos técnicos editáveis em <strong>.docx</strong> e versões finais em <strong>.pdf</strong>, com quantitativos por unidade, orçamento referencial e opção de <strong>laudo unificado para todos os bairros</strong>.</p>
+          <div class="reports-meta"><span><strong id="reportNeighborhoodCount">0</strong> bairros/localidades</span><span><strong id="inspectionUnitCount">0</strong> unidades das planilhas</span><span><strong id="inspectionLocatedCount">0</strong> localizadas</span><span><strong id="inspectionBudgetTotal">R$ 0,00</strong> orçamento referencial</span><span><strong id="reportEligiblePhotos">0</strong> fotos vinculadas</span></div>
+        </div>
+        <div class="reports-actions">
+          <button class="btn primary report-main-btn" id="btnOpenReport">▤ Gerar laudo técnico</button>
+          <button class="btn spatial-btn" id="btnSpatialReport" type="button">◎ Relatório de espacialização</button>
+          <button class="btn heat-btn" id="btnHeatmap" type="button">◉ Mapa de calor</button>
+          <button class="btn" id="btnLocateSurveyUnits" type="button">⌖ Localizar unidades das planilhas</button>
+          <label class="btn file-btn" title="Importar versões atualizadas das planilhas de vistoria e/ou do modelo orçamentário">↑ Atualizar planilhas<input id="inputInspectionSheets" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple hidden></label>
+          <span id="inspectionImportStatus" class="inspection-import-status">Base atual: dados incorporados ao sistema.</span>
+          
+        </div>
+      </section>
+
+      <section class="footer-actions">
+        <button class="btn" id="btnExportJson">Exportar backup</button>
+        <label class="btn file-btn">Importar backup<input id="inputImportJson" type="file" accept="application/json" hidden></label>
+        <button class="btn danger" id="btnReset" title="Apaga somente as fotografias vinculadas às rotas; rotas, sinistros, laudos e configurações são preservados">Limpar dados</button>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="routeDialog">
+    <form method="dialog" id="routeForm" class="modal-form">
+      <div class="modal-head"><div><p class="eyebrow">CADASTRO OPERACIONAL</p><h2 id="routeDialogTitle">Nova rota</h2></div><button value="cancel" class="icon-btn" aria-label="Fechar">×</button></div>
+      <input type="hidden" id="routeId" />
+      <label>Veículo<select id="routeVehicle" required></select></label>
+      <div class="two-cols"><label>Data<input id="routeDate" type="date" required></label><label>Responsável<input id="routeDriver" placeholder="Nome do motorista/equipe"></label></div>
+      <label>Destino<input id="routeDestination" required placeholder="Ex.: Rua / ponto de vistoria / setor"></label>
+      <label>Bairro / Localidade<input id="routeNeighborhood" placeholder="Ex.: Jardim Ponta Grossa"></label>
+      <div class="two-cols"><label>Latitude do destino<input id="routeLat" inputmode="decimal" placeholder="-23.5500"></label><label>Longitude do destino<input id="routeLng" inputmode="decimal" placeholder="-51.4600"></label></div>
+      <label>Observações<textarea id="routeNotes" rows="3" placeholder="Finalidade da vistoria, protocolo, referências..."></textarea></label>
+      <div class="modal-actions"><button value="cancel" class="btn">Cancelar</button><button type="submit" value="default" class="btn primary">Salvar rota</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="incidentDialog">
+    <form method="dialog" id="incidentForm" class="modal-form">
+      <div class="modal-head"><div><p class="eyebrow">REGISTRO DE OCORRÊNCIA</p><h2 id="incidentTitle">Novo sinistro</h2></div><button value="cancel" class="icon-btn" aria-label="Fechar">×</button></div>
+      <input type="hidden" id="incidentId" />
+      <div class="two-cols"><label>Veículo<select id="incidentVehicle" required></select></label><label>Rota<select id="incidentRoute"><option value="">Sem rota vinculada</option></select></label></div>
+      <div class="two-cols"><label>Data e hora<input id="incidentDate" type="datetime-local" required></label><label>Tipo<select id="incidentType"><option>Sinistro</option><option>Acidente</option><option>Obstrução de via</option><option>Dano ao patrimônio</option><option>Problema viário</option><option>Outro</option></select></label></div>
+      <div class="two-cols"><label>Latitude<input id="incidentLat" inputmode="decimal" required placeholder="-23.5500"></label><label>Longitude<input id="incidentLng" inputmode="decimal" required placeholder="-51.4600"></label></div>
+      <label>Endereço<input id="incidentAddress" required placeholder="Rua, número, bairro — Apucarana/PR"></label>
+      <label>Descrição<textarea id="incidentDescription" rows="3" placeholder="Descreva o ocorrido e providências adotadas"></textarea></label>
+      <label>Foto do sinistro<input id="incidentPhoto" type="file" accept="image/*"></label>
+      <div id="incidentPhotoPreview" class="incident-photo-preview"></div>
+      <div class="modal-actions"><button value="cancel" class="btn">Cancelar</button><button type="submit" value="default" class="btn primary">Salvar sinistro</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" id="settingsForm" class="modal-form">
+      <div class="modal-head"><div><p class="eyebrow">INTEGRAÇÃO</p><h2>Google Maps</h2></div><button value="cancel" class="icon-btn" aria-label="Fechar">×</button></div>
+      <p class="settings-explain">A leitura do texto da fotografia é feita por OCR. Para transformar <strong>Rua + número</strong> em coordenadas, o aplicativo consulta o Google Maps. Informe uma chave com a <strong>Maps JavaScript API</strong> habilitada. A chave fica salva somente neste navegador. Sem a chave, continuam disponíveis a leitura de coordenadas numéricas e o GPS/EXIF.</p>
+      <label>Chave da API do Google Maps<input id="googleMapsApiKey" type="password" autocomplete="off" placeholder="AIza..." /></label>
+      <div class="settings-note"><strong>Ordem de localização:</strong> coordenadas escritas no canto inferior direito → Rua + número no canto inferior esquerdo + Google Maps (Apucarana/PR) → mini mapa → GPS/EXIF. Quando o endereço é reconhecido, o sistema salva também o endereço retornado pelo Google Maps para conferência.</div>
+      <fieldset class="report-fieldset cloud-fieldset">
+        <legend>Salvamento na nuvem — Google Drive</legend>
+        <p class="settings-explain">O aplicativo pode manter uma cópia completa dos dados no seu Google Drive. O backup inclui rotas, fotos, sinistros, laudos, unidades das planilhas e configurações. O acesso é feito pelo login Google no próprio navegador.</p>
+        <label>Google OAuth Client ID<input id="googleDriveClientId" type="text" autocomplete="off" placeholder="000000000000-xxxxxxxx.apps.googleusercontent.com" /></label>
+        <div class="cloud-actions">
+          <button type="button" class="btn primary" id="btnDriveConnect">Conectar Google Drive</button>
+          <button type="button" class="btn" id="btnDriveSync">Salvar agora no Drive</button>
+          <button type="button" class="btn" id="btnDriveRestore">Restaurar do Drive</button>
+          <button type="button" class="btn" id="btnDriveDisconnect">Desconectar</button>
+        </div>
+        <label class="check-row"><input id="googleDriveAutoSync" type="checkbox" checked> Salvar automaticamente no Drive após alterações</label>
+        <div id="driveSyncProgress" class="process-progress is-idle" hidden>
+          <div class="process-progress-head"><span>SINCRONIZAÇÃO GOOGLE DRIVE</span><strong id="driveSyncPct" class="process-progress-percent">0%</strong></div>
+          <div class="process-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="driveSyncBar" class="process-progress-fill location-fill" style="width:0%"></div><span id="driveSyncInside" class="process-progress-inside">0%</span></div>
+          <div id="driveSyncText" class="process-progress-detail">Aguardando sincronização.</div>
+        </div>
+        <div id="googleDriveStatus" class="settings-note"><strong>Status:</strong> não conectado.</div>
+      </fieldset>
+      <div class="modal-actions"><button value="cancel" class="btn">Cancelar</button><button type="submit" value="default" class="btn primary">Salvar configuração</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="reportDialog" class="report-dialog">
+    <form method="dialog" id="reportForm" class="modal-form report-form">
+      <div class="modal-head"><div><p class="eyebrow">LAUDO TÉCNICO INSTITUCIONAL</p><h2>Danos em unidades habitacionais</h2></div><button value="cancel" class="icon-btn" aria-label="Fechar">×</button></div>
+      <div class="report-brand-note"><strong>Modelo base:</strong> Danos em Unidades Habitacionais. O laudo será gerado em <strong>A4 retrato</strong>, com azul <code>#4463A9</code>, amarelo <code>#F2CB18</code>, logo oficial e <strong>ficha individual por unidade com a respectiva fotografia</strong>.</div>
+      <div class="report-grid two-cols">
+        <label>Bairro / Localidade<select id="reportNeighborhood" required></select></label>
+        <label>Data do evento<input id="reportEventDate" type="date" required></label>
+      </div>
+      <label>Tipificação do evento / FIDE<input id="reportEventType" required placeholder="Ex.: Tempestade local/convectiva — vendaval"></label>
+      <div id="reportDataSummary" class="report-data-summary"></div>
+      <div id="reportInspectionSummary" class="inspection-report-summary"></div>
+      <div id="surveyGeocodeProgress" class="survey-geocode-progress" aria-live="polite">
+        <div class="survey-progress-head"><strong>LOCALIZAÇÃO DAS UNIDADES DAS PLANILHAS</strong><span id="surveyGeocodePct">0%</span></div>
+        <div class="survey-progress-track"><div id="surveyGeocodeBar" class="survey-progress-bar" style="width:0%"></div></div>
+        <div id="surveyGeocodeText" class="survey-progress-text">Coordenadas existentes são exibidas imediatamente; os demais endereços podem ser localizados pelo Google Maps.</div>
+        <div class="survey-progress-actions"><button type="button" class="btn" id="btnLocateSurveyUnitsDialog">⌖ Localizar / atualizar endereços</button></div>
+      </div>
+
+      <fieldset class="report-fieldset">
+        <legend>Unidades habitacionais — danificadas</legend>
+        <div class="report-grid report-4cols">
+          <label>Quantidade<input id="reportDamagedQty" type="number" min="0" step="1" value="0"></label>
+          <label>Valor estimado R$<input id="reportDamagedValue" inputmode="decimal" placeholder="0,00"></label>
+          <label class="span-2">Danos nas edificações<input id="reportDamagedDamage" placeholder="Ex.: destelhamento, infiltrações, ruptura de esquadrias"></label>
+        </div>
+        <label>Impacto aos moradores<textarea id="reportDamagedImpact" rows="2" placeholder="Ex.: danos materiais, desalojados, desabrigados"></textarea></label>
+      </fieldset>
+
+      <fieldset class="report-fieldset">
+        <legend>Unidades habitacionais — destruídas</legend>
+        <div class="report-grid report-4cols">
+          <label>Quantidade<input id="reportDestroyedQty" type="number" min="0" step="1" value="0"></label>
+          <label>Valor estimado R$<input id="reportDestroyedValue" inputmode="decimal" placeholder="0,00"></label>
+          <label class="span-2">Danos nas edificações<input id="reportDestroyedDamage" placeholder="Descreva os danos ou deixe em branco se não houver"></label>
+        </div>
+        <label>Impacto aos moradores<textarea id="reportDestroyedImpact" rows="2" placeholder="Ex.: perda total da moradia, desabrigados"></textarea></label>
+      </fieldset>
+
+      <label>Observações técnicas<textarea id="reportTechnicalNotes" rows="3" placeholder="Constatações complementares, providências, limitações da vistoria..."></textarea></label>
+      <div class="report-options">
+        <label class="check-row"><input id="reportIncludePhotos" type="checkbox" checked disabled> Associar automaticamente uma fotografia a cada unidade</label>
+        <label class="check-row"><input id="reportIncludeIncidents" type="checkbox" checked> Incluir síntese dos sinistros vinculados</label>
+        <label class="check-row"><input id="reportIncludeInspection" type="checkbox" checked> Incluir unidades e quantitativos das planilhas</label>
+        <label class="check-row"><input id="reportIncludeBudget" type="checkbox" checked> Incluir orçamento referencial do modelo</label>
+        <input id="reportPhotoLimit" type="hidden" value="500"><div class="report-photo-rule"><strong>ORGANIZAÇÃO DO LAUDO</strong><span>As fotos são distribuídas nas fichas das respectivas unidades; não há galeria concentrada no final.</span></div>
+      </div>
+      <div class="report-warning">Os arquivos combinam os registros do APUC Rotas com as planilhas de vistoria e o Modelo orçamento.xlsx. Divergências de origem são sinalizadas e não são corrigidas silenciosamente. Revise quantitativos, enquadramento SINAPI e conteúdo técnico antes da assinatura.</div>
+      <div class="modal-actions report-actions-row">
+        <button value="cancel" class="btn">Fechar</button>
+        <button type="button" class="btn" id="btnSaveReportDraft">Salvar dados</button>
+        <button type="button" class="btn" id="btnGenerateDocx">Gerar .DOCX</button>
+        <button type="button" class="btn primary" id="btnGeneratePdf">Gerar .PDF</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="photoDialog" class="photo-dialog">
+    <div class="photo-modal"><button class="icon-btn photo-close" id="photoClose">×</button><img id="photoLarge" alt="Fotografia ampliada"><div id="photoMeta" class="photo-meta"></div></div>
+  </dialog>
+
+  <dialog id="photoEditDialog" class="photo-edit-dialog">
+    <form method="dialog" id="photoEditForm" class="modal-form">
+      <div class="modal-head"><div><p class="eyebrow">AJUSTE MANUAL DA FOTOGRAFIA</p><h2>Nome e localização</h2></div><button value="cancel" class="icon-btn" aria-label="Fechar">×</button></div>
+      <input type="hidden" id="photoEditId">
+      <label>Nome da fotografia<input id="photoEditName" required placeholder="Ex.: APUC-02-Sinistro01-Fachada.jpg"></label>
+      <label>Endereço para localização<input id="photoEditAddress" placeholder="Rua, número — Apucarana/PR"></label>
+      <div class="photo-edit-address-actions"><button type="button" class="btn" id="btnPhotoGeocodeAddress">⌖ Localizar endereço</button><span id="photoEditGeocodeStatus"></span></div>
+      <div class="two-cols"><label>Latitude<input id="photoEditLat" inputmode="decimal" placeholder="-23.550000"></label><label>Longitude<input id="photoEditLng" inputmode="decimal" placeholder="-51.460000"></label></div>
+      <div class="manual-pin-note"><strong>Mover pin no mapa:</strong> use o botão abaixo; o marcador da foto ficará arrastável. Ao soltar o pin, a nova posição será salva automaticamente.</div>
+      <div class="modal-actions"><button value="cancel" class="btn">Cancelar</button><button type="button" class="btn" id="btnStartPhotoDrag">Mover pin no mapa</button><button type="submit" value="default" class="btn primary">Salvar alterações</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="spatialDialog" class="spatial-dialog">
+    <form method="dialog" id="spatialForm" class="modal-form spatial-form">
+      <div class="modal-head"><div><p class="eyebrow">RELATÓRIO AUTÔNOMO</p><h2>Espacialização dos locais de campo</h2></div><button value="cancel" class="icon-btn" aria-label="Fechar">×</button></div>
+      <div class="spatial-separate-note"><strong>Relatório separado:</strong> este produto utiliza apenas fotografias georreferenciadas e, opcionalmente, sinistros. <strong>As unidades importadas das planilhas não são incorporadas neste mapa.</strong></div>
+      <label>Escopo<select id="spatialScope"><option value="all">Todos os veículos e rotas</option><option value="vehicle">Veículo atualmente selecionado</option><option value="route">Rota atualmente selecionada</option></select></label>
+      <div class="report-options">
+        <label class="check-row"><input id="spatialIncludePhotos" type="checkbox" checked> Fotografias georreferenciadas</label>
+        <label class="check-row"><input id="spatialIncludeIncidents" type="checkbox" checked> Sinistros georreferenciados</label>
+        <label class="check-row"><input id="spatialIncludeIndividual" type="checkbox" checked> Incluir mapa individual de cada caso</label>
+      </div>
+      <div id="spatialSummary" class="report-data-summary"></div>
+      <div id="spatialProgress" class="survey-geocode-progress" hidden>
+        <div class="survey-progress-head"><strong>GERAÇÃO DA ESPACIALIZAÇÃO</strong><span id="spatialProgressPct">0%</span></div>
+        <div class="survey-progress-track"><div id="spatialProgressBar" class="survey-progress-bar" style="width:0%"></div></div>
+        <div id="spatialProgressText" class="survey-progress-text">Aguardando geração.</div>
+      </div>
+      <div class="modal-actions report-actions-row"><button value="cancel" class="btn">Fechar</button><button type="button" class="btn" id="btnSpatialGeneralPng">Baixar mapa geral .PNG</button><button type="button" class="btn primary" id="btnGenerateSpatialPdf">Gerar relatório .PDF</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="data/inspection_data.js?v=18"></script>
+  <script src="app.js?v=18"></script>
+</body>
+</html>
